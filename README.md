@@ -1,5 +1,9 @@
 # SafeSend: Analitzador Preventiu de Seguretat 🛡️
 
+<p align="center">
+  <img src="logo_safesend.png" alt="SafeSend Logo" width="300">
+</p>
+
 **SafeSend** és una solució de programari modular desenvolupada en Python dissenyada per enfortir la seguretat en entorns corporatius. L'eina se centra a mitigar els riscos derivats de la manipulació de fitxers per part d'usuaris sense formació tècnica específica, proporcionant un diagnòstic clar sobre la perillositat dels documents abans que siguin enviats o executats.
 
 ---
