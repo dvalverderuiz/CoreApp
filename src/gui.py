@@ -1,6 +1,7 @@
 # src/gui.py
 import tkinter as tk
 from tkinter import filedialog, messagebox
+
 from scan import analyze_file
 from report import save_report
 
@@ -22,13 +23,23 @@ def launch_gui():
 
     def update_ui(result):
         txt_output.delete("1.0", tk.END)
+
+        # Identificación del archivo
         txt_output.insert(tk.END, f"📂 Archivo: {result['file']}\n")
-        txt_output.insert(tk.END, f"🔢 Hash: {result['hash']}\n")
+        txt_output.insert(tk.END, f"🔢 Hash SHA256: {result['hash']}\n")
+
+        # Características básicas
         txt_output.insert(tk.END, f"📏 Tamaño: {result['size_mb']} MB\n")
-        txt_output.insert(tk.END, f"📂 Extensión: {result['extension']}\n")
+        txt_output.insert(tk.END, f"📄 Extensión: {result['extension']}\n")
+        txt_output.insert(tk.END, f"📁 Tipo de archivo: {result.get('type', 'Desconocido')}\n")
+
+        # Análisis de contenido
         txt_output.insert(tk.END, f"🎯 Entropía: {result['entropy']}\n")
         txt_output.insert(tk.END, f"🧩 Detecciones: {result['detections']}\n")
-        txt_output.insert(tk.END, f"⚠️ Riesgo: {result['risk']}\n")
+
+        # Evaluación de riesgo
+        txt_output.insert(tk.END, f"📊 Puntuación de riesgo: {result.get('risk_score', 0)} / 100\n")
+        txt_output.insert(tk.END, f"⚠️ Clasificación final: {result['risk']}\n")
 
         color = {
             "Seguro": "lightgreen",

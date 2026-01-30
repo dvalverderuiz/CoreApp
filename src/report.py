@@ -3,8 +3,10 @@ import json
 import os
 from datetime import datetime
 
-def save_report(result, filename="results.json"):
-    
+def save_report(result, filename=None):
+    if filename is None:
+        filename = f"report_{result['hash'][:8]}.json"
+
     os.makedirs("results", exist_ok=True)
     path = os.path.join("results", filename)
 

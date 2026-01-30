@@ -5,6 +5,13 @@ import math
 import hashlib
 from rules import PATTERNS, BLOCKED_EXTENSIONS, MAX_FILE_SIZE_MB
 
+def classify_file(ext: str) -> str:
+    if ext in [".txt", ".csv", ".md"]:
+        return "Texto"
+    if ext in [".pdf", ".docx", ".xlsx"]:
+        return "Documento"
+    return "Binario"
+
 
 def calculate_hash(path: str) -> str:
     """Devuelve el hash SHA256 de un archivo."""
@@ -45,6 +52,7 @@ def analyze_file(path: str) -> dict:
         result["size_mb"] = round(size_mb, 2)
         ext = os.path.splitext(path)[1].lower()
         result["extension"] = ext
+        result["type"] = classify_file(ext)
 
         # Comprobar tamaño y extensión
         blocked = ext in BLOCKED_EXTENSIONS
@@ -56,6 +64,9 @@ def analyze_file(path: str) -> dict:
                 text = f.read()
             detections = detect_sensitive_data(text)
             entropy = calculate_entropy(text.encode("utf-8"))
+            if entropy > 7.8 and ext in [".txt", ".csv"]:
+                detections.append("posible_contenido_cifrado")
+
         except Exception:
             detections = []
             entropy = 0.0
@@ -64,12 +75,41 @@ def analyze_file(path: str) -> dict:
         result["entropy"] = round(entropy, 2)
 
         # Evaluar riesgo
-        risk = "Seguro"
-        if blocked or oversize or entropy > 7.5 or detections:
-            risk = "Revisión necesaria"
-        if blocked or len(detections) >= 2:
+        score = 0
+        if blocked:
+            score += 40
+        if oversize:
+            score += 20
+        if entropy > 7.5:
+            score += 25
+        score += len(detections) * 10
+        if size_mb == 0:
+            score += 30
+
+        # Riesgo critico (detecciones sensibles)
+        if detections:
+            score = max(score, 30)
+
+        CRITICAL_DETECTIONS = ["password", "contraseña"]
+        if any(d in CRITICAL_DETECTIONS for d in detections):
+            score = max(score, 60)
+
+        if len(detections) >= 2:
+            score = max(score, 70)
+
+        score = min(score, 100)
+
+        # Evaluar riesgo final
+        if score >= 70:
             risk = "Sospechoso"
+        elif score >= 30:
+            risk = "Revisión necesaria"
+        else:
+            risk = "Seguro"
+
+        result["risk_score"] = score
         result["risk"] = risk
+
 
     except Exception as e:
         result["error"] = str(e)
